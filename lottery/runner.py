@@ -172,9 +172,9 @@ class LotteryRunner(Runner):
 
             for examples, labels, idx, diff in self._train_loader:
                 examples = examples.to(get_platform().torch_device)
-                print(examples)
+                
                 labels = labels.squeeze().to(get_platform().torch_device)
-                output = model(examples)
+                output = model(examples.float())
 
                 rps.extend(correct(labels, output))
                 diffs.extend(diff) 
