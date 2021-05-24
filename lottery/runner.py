@@ -80,7 +80,7 @@ class LotteryRunner(Runner):
         model.to(get_platform().torch_device)
 
         initial_model_theta = self._estimate_theta(model) 
-
+        pruned_theta = -30
         for level in range(self.levels+1):
             num_samples = 0
             while True and level >= 1:
