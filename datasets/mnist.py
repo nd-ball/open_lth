@@ -38,7 +38,7 @@ class Dataset(base.ImageDataset):
 
     def __init__(self,  examples, labels, idx, diffs):
         tensor_transforms = [torchvision.transforms.Normalize(mean=[0.1307], std=[0.3081])]
-        super(Dataset, self).__init__(examples, labels, idx, diffs, [], tensor_transforms)
+        super(Dataset, self).__init__(examples, labels, indices=idx, diffs=diffs, image_transforms=[], tensor_transforms=tensor_transforms)
 
     def example_to_image(self, example):
         return Image.fromarray(example.numpy(), mode='L')
