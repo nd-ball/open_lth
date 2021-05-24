@@ -174,7 +174,6 @@ class LotteryRunner(Runner):
 
         model.eval()
         with torch.no_grad():
-
             for examples, labels, idx, diff in self._train_loader:
                 examples = examples.to(get_platform().torch_device)
                 
