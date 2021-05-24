@@ -165,7 +165,7 @@ class LotteryRunner(Runner):
         diffs = []
 
         def correct(labels, output):
-            return torch.eq(labels, output.argmax(dim=1))
+            return torch.eq(labels, output.argmax(dim=1)).cpu()
 
         model.eval()
         with torch.no_grad():
@@ -179,4 +179,4 @@ class LotteryRunner(Runner):
                 rps.extend(correct(labels, output))
                 diffs.extend(diff) 
 
-        return scoring.calculate_theta(diffs.cpu(), rps.cpu(), 1000)
+        return scoring.calculate_theta(diffs, rps, 1000)
