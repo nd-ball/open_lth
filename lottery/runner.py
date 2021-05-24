@@ -15,7 +15,9 @@ import pruning.registry
 from pruning.mask import Mask
 from pruning.pruned_model import PrunedModel
 from training import train
-
+import datasets.registry
+import torch
+from py_irt import scoring 
 
 @dataclass
 class LotteryRunner(Runner):
@@ -130,3 +132,28 @@ class LotteryRunner(Runner):
             model = models.registry.load(old_location, self.desc.train_end_step,
                                          self.desc.model_hparams, self.desc.train_outputs)
             pruning.registry.get(self.desc.pruning_hparams)(model, Mask.load(old_location)).save(new_location)
+
+    def _get_data(self):
+        """I need data to estimate theta, and here is the place to do it, so I'm breaking the package conventions."""
+        train_loader = datasets.registry.get(self.desc.dataset_hparams, train=True)
+        self._train_loader = train_loader 
+
+    def _estimate_theta(self, model):
+        rps = []
+        diffs = []
+
+        def correct(labels, output):
+            return torch.eq(labels, output.argmax(dim=1)).cpu()
+
+        model.eval()
+        with torch.no_grad():
+            for examples, labels, idx, diff in self._train_loader:
+                examples = examples.to(get_platform().torch_device)
+                
+                labels = labels.squeeze().to(get_platform().torch_device)
+                output = model(examples.float())
+
+                rps.extend(correct(labels, output))
+                diffs.extend(diff) 
+
+        return scoring.calculate_theta(diffs, rps, 1000)
