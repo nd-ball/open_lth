@@ -82,6 +82,7 @@ class LotteryRunner(Runner):
         initial_model_theta = self._estimate_theta(model)[0]
         pruned_theta = -30
         for level in range(self.levels+1):
+            if get_platform().is_primary_process: self._prune_level(level)
             num_samples = 0
             while True and level >= 1:
                 print('pruning')
