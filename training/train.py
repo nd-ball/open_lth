@@ -79,6 +79,8 @@ def train(
     # Get the random seed for the data order.
     data_order_seed = training_hparams.data_order_seed
 
+    model.train()
+
     # Restore the model from a saved checkpoint if the checkpoint exists.
     cp_step, cp_logger = restore_checkpoint(output_location, model, optimizer, train_loader.iterations_per_epoch)
     start_step = cp_step or start_step or Step.zero(train_loader.iterations_per_epoch)
