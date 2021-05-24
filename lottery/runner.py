@@ -77,9 +77,9 @@ class LotteryRunner(Runner):
 
         model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
                                      self.desc.model_hparams, self.desc.train_outputs)
+        model.to(get_platform().torch_device)
 
         initial_model_theta = self._estimate_theta(model) 
-
 
         for level in range(self.levels+1):
             if get_platform().is_primary_process: self._prune_level(level)
@@ -164,7 +164,7 @@ class LotteryRunner(Runner):
         rps = []
         diffs = []
 
-        def correct(labels, outputs):
+        def correct(labels, output):
             return torch.eq(labels, output.argmax(dim=1))
 
         model.eval()

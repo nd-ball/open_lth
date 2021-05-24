@@ -46,7 +46,7 @@ def create_eval_callback(eval_name: str, loader: DataLoader, verbose=False):
         total_loss = torch.tensor(0.0).to(get_platform().torch_device)
         total_correct = torch.tensor(0.0).to(get_platform().torch_device)
 
-        def correct(labels, outputs):
+        def correct(labels, output):
             return torch.sum(torch.eq(labels, output.argmax(dim=1)))
 
         model.eval()
