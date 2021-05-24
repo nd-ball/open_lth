@@ -74,9 +74,9 @@ class my_MNIST(data.Dataset):
         self.difficulties = []
         if diff_dir is not None:
             if self.train:
-                diff_file = diff_dir + 'mnist_diffs_train.csv'
+                diff_file = '~/data/artificial_crowd_rps/mnist_diffs_train.csv'
             else:
-                diff_file = diff_dir + 'mnist_diffs_test.csv' 
+                diff_file = '~/data/artificial_crowd_rps/mnist_diffs_test.csv' 
             with open(diff_file, 'r') as infile:
                 diffreader = csv.reader(infile, delimiter=',')
 
