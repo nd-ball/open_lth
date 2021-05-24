@@ -46,7 +46,7 @@ def create_eval_callback(eval_name: str, loader: DataLoader, verbose=False):
         total_loss = torch.tensor(0.0).to(get_platform().torch_device)
         total_correct = torch.tensor(0.0).to(get_platform().torch_device)
 
-        def correct(labels, output):
+        def correct(labels, outputs):
             return torch.sum(torch.eq(labels, output.argmax(dim=1)))
 
         model.eval()
@@ -60,7 +60,7 @@ def create_eval_callback(eval_name: str, loader: DataLoader, verbose=False):
                 labels_size = torch.tensor(len(labels), device=get_platform().torch_device)
                 example_count += labels_size
                 total_loss += model.loss_criterion(output, labels) * labels_size
-                print(labels, output)
+                #print(labels, output)
                 total_correct += correct(labels, output)
 
         # Share the information if distributed.
