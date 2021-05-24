@@ -71,8 +71,30 @@ class LotteryRunner(Runner):
         if get_platform().is_primary_process: self._establish_initial_weights()
         get_platform().barrier()
 
+        self._get_data() 
+        model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
+                                     self.desc.model_hparams, self.desc.train_outputs)
+        model.to(get_platform().torch_device)
+
+        initial_model_theta = self._estimate_theta(model)[0]
+        pruned_theta = -30
+        print(initial_model_theta)
+
         for level in range(self.levels+1):
             if get_platform().is_primary_process: self._prune_level(level)
+            num_samples = 0
+            while num_samples < 20 and level >= 1:
+                if get_platform().is_primary_process: self._prune_level(level)
+            
+                num_samples += 1
+                location = self.desc.run_path(self.replicate, level)
+                pruned_model = PrunedModel(model.to('cpu'), Mask.load(location))
+                pruned_model.to(get_platform().torch_device)
+
+                pruned_theta = self._estimate_theta(pruned_model)[0]
+                if pruned_theta > initial_model_theta:
+                    break 
+            print(num_samples, initial_model_theta, pruned_theta)
             get_platform().barrier()
             self._train_level(level)
 
@@ -151,9 +173,9 @@ class LotteryRunner(Runner):
                 examples = examples.to(get_platform().torch_device)
                 
                 labels = labels.squeeze().to(get_platform().torch_device)
-                output = model(examples.float())
+                output = model(examples)
 
                 rps.extend(correct(labels, output))
                 diffs.extend(diff) 
 
-        return scoring.calculate_theta(diffs, rps, 1000)
+        return scoring.calculate_theta(diffs, rps, 100)

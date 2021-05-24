@@ -52,7 +52,7 @@ def create_eval_callback(eval_name: str, loader: DataLoader, verbose=False):
         model.eval()
 
         with torch.no_grad():
-            for examples, labels in loader:
+            for examples, labels, _, _ in loader:
                 examples = examples.to(get_platform().torch_device)
                 labels = labels.squeeze().to(get_platform().torch_device)
                 output = model(examples)

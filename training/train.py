@@ -97,7 +97,7 @@ def train(
         # Ensure the data order is different for each epoch.
         train_loader.shuffle(None if data_order_seed is None else (data_order_seed + ep))
 
-        for it, (examples, labels) in enumerate(train_loader):
+        for it, (examples, labels, _, _) in enumerate(train_loader):
 
             # Advance the data loader until the start epoch and iteration.
             if ep == start_step.ep and it < start_step.it: continue

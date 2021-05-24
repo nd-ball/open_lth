@@ -40,7 +40,7 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
     def get_test_set() -> 'Dataset':
         pass
 
-    def __init__(self, examples: np.ndarray, labels):
+    def __init__(self, examples: np.ndarray, labels,idx=None, diffs=None):
         """Create a dataset object.
 
         examples is a numpy array of the examples (or the information necessary to get them).
@@ -56,6 +56,8 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
         self._examples = examples
         self._labels = labels if isinstance(labels, np.ndarray) else labels.numpy()
         self._subsampled = False
+        self._diffs = diffs
+        self._idx = idx
 
     def randomize_labels(self, seed: int, fraction: float) -> None:
         """Randomize the labels of the specified fraction of the dataset."""
@@ -91,12 +93,15 @@ class ImageDataset(Dataset):
     def example_to_image(self, example: np.ndarray) -> Image: pass
 
     def __init__(self, examples, labels, image_transforms=None, tensor_transforms=None,
-                 joint_image_transforms=None, joint_tensor_transforms=None):
+                 joint_image_transforms=None, joint_tensor_transforms=None,
+                 idx=None, diffs=None):
         super(ImageDataset, self).__init__(examples, labels)
         self._image_transforms = image_transforms or []
         self._tensor_transforms = tensor_transforms or []
         self._joint_image_transforms = joint_image_transforms or []
         self._joint_tensor_transforms = joint_tensor_transforms or []
+        self._idx = idx
+        self._diffs = diffs
 
         self._composed = None
 
@@ -106,11 +111,12 @@ class ImageDataset(Dataset):
                 self._image_transforms + [torchvision.transforms.ToTensor()] + self._tensor_transforms)
 
         example, label = self._examples[index], self._labels[index]
+        idx, diff = self._idx[index], self._diffs[index]
         example = self.example_to_image(example)
         for t in self._joint_image_transforms: example, label = t(example, label)
         example = self._composed(example)
         for t in self._joint_tensor_transforms: example, label = t(example, label)
-        return example, label
+        return example, label, idx, diff 
 
     def blur(self, blur_factor: float) -> None:
         """Add a transformation that blurs the image by downsampling by blur_factor."""
