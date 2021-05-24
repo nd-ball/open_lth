@@ -82,10 +82,11 @@ class LotteryRunner(Runner):
         initial_model_theta = self._estimate_theta(model) 
 
         for level in range(self.levels+1):
-            if get_platform().is_primary_process: self._prune_level(level)
-            
             num_samples = 0
             while True and level >= 1:
+                print('pruning')
+                if get_platform().is_primary_process: self._prune_level(level)
+            
                 num_samples += 1
                 location = self.desc.run_path(self.replicate, level)
                 pruned_model = PrunedModel(model.to('cpu'), Mask.load(location))
@@ -94,7 +95,7 @@ class LotteryRunner(Runner):
                 pruned_theta = self._estimate_theta(pruned_model) 
                 if pruned_theta > initial_model_theta:
                     break 
-            print(num_samples) 
+            print(num_samples, initial_model_theta, pruned_theta) 
 
             get_platform().barrier()
             self._train_level(level)
