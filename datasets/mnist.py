@@ -9,7 +9,7 @@ import torchvision
 
 from datasets import base
 from platforms.platform import get_platform
-from my_data_loaders import my_MNIST 
+from datasets.my_data_loaders import my_MNIST 
 
 class Dataset(base.ImageDataset):
     """The MNIST dataset."""
