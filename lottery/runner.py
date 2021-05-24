@@ -64,6 +64,7 @@ class LotteryRunner(Runner):
         print(self.desc.run_path(self.replicate, 0))
 
     def run(self) -> None:
+        self._get_data()
         if self.verbose and get_platform().is_primary_process:
             print('='*82 + f'\nLottery Ticket Experiment (Replicate {self.replicate})\n' + '-'*82)
             print(self.desc.display)
