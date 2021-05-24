@@ -36,9 +36,9 @@ class Dataset(base.ImageDataset):
             train=False, root=os.path.join(get_platform().dataset_root, 'mnist'), download=True)
         return Dataset(test_set.data, test_set.targets, test_set.idx, test_set.difficulties)
 
-    def __init__(self,  examples, labels):
+    def __init__(self,  examples, labels, idx, diffs):
         tensor_transforms = [torchvision.transforms.Normalize(mean=[0.1307], std=[0.3081])]
-        super(Dataset, self).__init__(examples, labels, [], tensor_transforms)
+        super(Dataset, self).__init__(examples, labels, idx, diffs, [], tensor_transforms)
 
     def example_to_image(self, example):
         return Image.fromarray(example.numpy(), mode='L')

@@ -78,7 +78,7 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
         examples_to_retain = np.random.RandomState(seed=seed+1).permutation(len(self._labels))[:examples_to_retain]
         self._examples = self._examples[examples_to_retain]
         self._labels = self._labels[examples_to_retain]
-        self._idx = self.idx_[examples_to_retain]
+        self._idx = self._idx[examples_to_retain]
         self._diffs = self._diffs[examples_to_retain]
 
     def __len__(self):
@@ -94,7 +94,7 @@ class ImageDataset(Dataset):
     @abc.abstractmethod
     def example_to_image(self, example: np.ndarray) -> Image: pass
 
-    def __init__(self, examples, labels, image_transforms=None, tensor_transforms=None,
+    def __init__(self, examples, labels, indices=None, diffs=None, image_transforms=None, tensor_transforms=None,
                  joint_image_transforms=None, joint_tensor_transforms=None):
         super(ImageDataset, self).__init__(examples, labels)
         self._image_transforms = image_transforms or []
@@ -103,6 +103,9 @@ class ImageDataset(Dataset):
         self._joint_tensor_transforms = joint_tensor_transforms or []
 
         self._composed = None
+        self._idx = indices if indices is not None else list(range(labels.shape[0]))
+        self._diffs = diffs if diffs is not None else [0] * labels.shape[0] 
+
 
     def __getitem__(self, index):
         if not self._composed:
