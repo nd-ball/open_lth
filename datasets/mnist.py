@@ -32,7 +32,7 @@ class Dataset(base.ImageDataset):
 
     @staticmethod
     def get_test_set():
-        test_set = torchvision.datasetsMNIST(
+        test_set = torchvision.datasets.MNIST(
             train=False, root=os.path.join(get_platform().dataset_root, 'mnist'), download=True)
         return Dataset(test_set.data, test_set.targets, [0]*10000, [0]*10000)
 
