@@ -26,15 +26,15 @@ class Dataset(base.ImageDataset):
     @staticmethod
     def get_train_set(use_augmentation):
         # No augmentation for MNIST.
-        train_set = my_MNIST(
+        train_set = torchvision.datasets.MNIST(
             train=True, root=os.path.join(get_platform().dataset_root, 'mnist'), download=True)
-        return Dataset(train_set.data, train_set.targets, train_set.idx, train_set.difficulties)
+        return Dataset(train_set.data, train_set.targets, [0]*60000, [0]*60000)
 
     @staticmethod
     def get_test_set():
-        test_set = my_MNIST(
+        test_set = torchvision.datasetsMNIST(
             train=False, root=os.path.join(get_platform().dataset_root, 'mnist'), download=True)
-        return Dataset(test_set.data, test_set.targets, test_set.idx, test_set.difficulties)
+        return Dataset(test_set.data, test_set.targets, [0]*10000, [0]*10000)
 
     def __init__(self,  examples, labels, idx, diffs):
         tensor_transforms = [torchvision.transforms.Normalize(mean=[0.1307], std=[0.3081])]
