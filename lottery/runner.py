@@ -75,12 +75,12 @@ class LotteryRunner(Runner):
         if get_platform().is_primary_process: self._establish_initial_weights()
         get_platform().barrier()
 
-        model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
-                                     self.desc.model_hparams, self.desc.train_outputs)
-        model.to(get_platform().torch_device)
+        #model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
+        #                             self.desc.model_hparams, self.desc.train_outputs)
+        #model.to(get_platform().torch_device)
 
-        initial_model_theta = self._estimate_theta(model)[0]
-        pruned_theta = -30
+        #initial_model_theta = self._estimate_theta(model)[0]
+        #pruned_theta = -30
         for level in range(self.levels+1):
             if get_platform().is_primary_process: self._prune_level(level)
             num_samples = 0
