@@ -179,4 +179,4 @@ class LotteryRunner(Runner):
                 rps.extend(correct(labels, output))
                 diffs.extend(diff) 
 
-        return scoring.calculate_theta(diffs, rps, 1000)
+        return scoring.calculate_theta(diffs.cpu(), rps.cpu(), 1000)
