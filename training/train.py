@@ -100,6 +100,7 @@ def train(
         train_loader.shuffle(None if data_order_seed is None else (data_order_seed + ep))
 
         for it, (examples, labels, _, _) in enumerate(train_loader):
+            print("iteration", ep)
 
             # Advance the data loader until the start epoch and iteration.
             if ep == start_step.ep and it < start_step.it: continue
