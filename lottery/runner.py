@@ -79,7 +79,7 @@ class LotteryRunner(Runner):
                                      self.desc.model_hparams, self.desc.train_outputs)
         model.to(get_platform().torch_device)
 
-        initial_model_theta = self._estimate_theta(model) 
+        initial_model_theta = self._estimate_theta(model)[0]
         pruned_theta = -30
         for level in range(self.levels+1):
             num_samples = 0
