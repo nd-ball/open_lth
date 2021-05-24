@@ -9,7 +9,7 @@ import torchvision
 
 from datasets import base
 from platforms.platform import get_platform
-
+from my_data_loaders import my_MNIST 
 
 class Dataset(base.ImageDataset):
     """The MNIST dataset."""
@@ -26,15 +26,15 @@ class Dataset(base.ImageDataset):
     @staticmethod
     def get_train_set(use_augmentation):
         # No augmentation for MNIST.
-        train_set = torchvision.datasets.MNIST(
+        train_set = my_MNIST(
             train=True, root=os.path.join(get_platform().dataset_root, 'mnist'), download=True)
-        return Dataset(train_set.data, train_set.targets)
+        return Dataset(train_set.data, train_set.targets, train_set.idx, train_set.difficulties)
 
     @staticmethod
     def get_test_set():
-        test_set = torchvision.datasets.MNIST(
+        test_set = my_MNIST(
             train=False, root=os.path.join(get_platform().dataset_root, 'mnist'), download=True)
-        return Dataset(test_set.data, test_set.targets)
+        return Dataset(test_set.data, test_set.targets, test_set.idx, test_set.difficulties)
 
     def __init__(self,  examples, labels):
         tensor_transforms = [torchvision.transforms.Normalize(mean=[0.1307], std=[0.3081])]
@@ -42,6 +42,10 @@ class Dataset(base.ImageDataset):
 
     def example_to_image(self, example):
         return Image.fromarray(example.numpy(), mode='L')
+
+    def __getitem__(self, index):
+        return self._examples[index], self._labels[index], self._idx[index], self._diffs[index]
+
 
 
 DataLoader = base.DataLoader

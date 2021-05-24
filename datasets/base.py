@@ -40,7 +40,7 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
     def get_test_set() -> 'Dataset':
         pass
 
-    def __init__(self, examples: np.ndarray, labels):
+    def __init__(self, examples: np.ndarray, labels, indices=None, diffs=None):
         """Create a dataset object.
 
         examples is a numpy array of the examples (or the information necessary to get them).
@@ -56,6 +56,8 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
         self._examples = examples
         self._labels = labels if isinstance(labels, np.ndarray) else labels.numpy()
         self._subsampled = False
+        self._idx = indices if indices is not None else list(range(labels.shape[0]))
+        self._diffs = diffs if diffs is not None else [0] * labels.shape[0] 
 
     def randomize_labels(self, seed: int, fraction: float) -> None:
         """Randomize the labels of the specified fraction of the dataset."""
@@ -76,6 +78,8 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
         examples_to_retain = np.random.RandomState(seed=seed+1).permutation(len(self._labels))[:examples_to_retain]
         self._examples = self._examples[examples_to_retain]
         self._labels = self._labels[examples_to_retain]
+        self._idx = self.idx_[examples_to_retain]
+        self._diffs = self._diffs[examples_to_retain]
 
     def __len__(self):
         return self._labels.size
@@ -83,7 +87,7 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
     def __getitem__(self, index):
         """If there is custom logic for example loading, this method should be overridden."""
 
-        return self._examples[index], self._labels[index]
+        return self._examples[index], self._labels[index] 
 
 
 class ImageDataset(Dataset):

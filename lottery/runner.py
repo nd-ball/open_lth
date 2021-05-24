@@ -9,6 +9,8 @@ from cli import shared_args
 from dataclasses import dataclass
 from foundations.runner import Runner
 import models.registry
+import datasets.registry
+
 from lottery.desc import LotteryDesc
 from platforms.platform import get_platform
 import pruning.registry
@@ -16,7 +18,10 @@ from pruning.mask import Mask
 from pruning.pruned_model import PrunedModel
 from training import train
 
+import torch 
 
+
+from py_irt import scoring 
 @dataclass
 class LotteryRunner(Runner):
     replicate: int
@@ -69,8 +74,25 @@ class LotteryRunner(Runner):
         if get_platform().is_primary_process: self._establish_initial_weights()
         get_platform().barrier()
 
+        model = models.registry.load(self.desc.run_path(self.replicate, 0), self.desc.train_start_step,
+                                     self.desc.model_hparams, self.desc.train_outputs)
+
+        initial_model_theta = self._estimate_theta(model) 
+
+
         for level in range(self.levels+1):
             if get_platform().is_primary_process: self._prune_level(level)
+            
+            num_samples = 0
+            while True:
+                num_samples += 1
+                location = self.desc.run_path(self.replicate, level)
+                pruned_model = PrunedModel(model, Mask.load(location))
+                pruned_theta = self._estimate_theta(pruned_model) 
+                if pruned_theta > initial_model_theta:
+                    break 
+            print(num_samples) 
+
             get_platform().barrier()
             self._train_level(level)
 
@@ -115,9 +137,10 @@ class LotteryRunner(Runner):
         pruned_model.save(location, self.desc.train_start_step)
         if self.verbose and get_platform().is_primary_process:
             print('-'*82 + '\nPruning Level {}\n'.format(level) + '-'*82)
-        train.standard_train(pruned_model, location, self.desc.dataset_hparams, self.desc.training_hparams,
+        theta = train.standard_train(pruned_model, location, self.desc.dataset_hparams, self.desc.training_hparams,
                              start_step=self.desc.train_start_step, verbose=self.verbose,
                              evaluate_every_epoch=self.evaluate_every_epoch)
+        return theta 
 
     def _prune_level(self, level: int):
         new_location = self.desc.run_path(self.replicate, level)
@@ -130,3 +153,28 @@ class LotteryRunner(Runner):
             model = models.registry.load(old_location, self.desc.train_end_step,
                                          self.desc.model_hparams, self.desc.train_outputs)
             pruning.registry.get(self.desc.pruning_hparams)(model, Mask.load(old_location)).save(new_location)
+
+    def _get_data(self):
+        """I need data to estimate theta, and here is the place to do it, so I'm breaking the package conventions."""
+        train_loader = datasets.registry.get(self.desc.dataset_hparams, train=True)
+        self._train_loader = train_loader 
+
+    def _estimate_theta(self, model):
+        rps = []
+        diffs = []
+
+        def correct(labels, outputs):
+            return torch.eq(labels, output.argmax(dim=1))
+
+        model.eval()
+        with torch.no_grad():
+
+            for examples, labels, idx, diff in self._train_loader:
+                examples = examples.to(get_platform().torch_device)
+                labels = labels.squeeze().to(get_platform().torch_device)
+                output = model(examples)
+
+                rps.extend(correct(labels, output))
+                diffs.extend(diff) 
+
+        return scoring.calculate_theta(diffs, rps, 1000)
