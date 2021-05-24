@@ -55,7 +55,7 @@ def create_eval_callback(eval_name: str, loader: DataLoader, verbose=False):
             for examples, labels, _, _ in loader:
                 examples = examples.to(get_platform().torch_device)
                 labels = labels.squeeze().to(get_platform().torch_device)
-                output = model(examples)
+                output = model(examples.float())
 
                 labels_size = torch.tensor(len(labels), device=get_platform().torch_device)
                 example_count += labels_size
