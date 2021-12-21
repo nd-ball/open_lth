@@ -86,7 +86,6 @@ class LotteryRunner(Runner):
             num_samples = 0
             """
             while True and level >= 1:
-                print('pruning')
                 if get_platform().is_primary_process: self._prune_level(level)
             
                 num_samples += 1
@@ -98,6 +97,7 @@ class LotteryRunner(Runner):
                 if pruned_theta > initial_model_theta:
                     break 
             print(num_samples, initial_model_theta, pruned_theta) 
+                print('pruning')
             """
 
             get_platform().barrier()
